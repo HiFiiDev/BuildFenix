@@ -98,3 +98,23 @@ makeChangelog
 cd $FenixHome
 mv app-geckoNightly-arm64-v8a-fenixNightly-aligned-debugSigned.apk Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y").apk
 if [ -d "$FenixHome/$TodaysDate" ]; then mkdir -p 10-06-2019__2 ; fi
+d $FenixChanges/$TodaysDate ]; then mkdir -p $FenixChanges/$TodaysDate; fi
+
+    cd $Fenix
+    git log --reverse --no-merges --since=1.day.ago >> Fenix_changelog_$TodaysDate.txt
+    mv Fenix_changelog_$TodaysDate.txt $FenixChanges/$TodaysDate/
+}
+
+clear
+echo " "
+echo "Welcome, $USER! \n"
+sleep 1
+# was just testing this
+# echo $fenixHomeCountUp
+buildFenix
+doCd
+signFenix
+makeChangelog
+cd $FenixHome
+mv app-geckoNightly-arm64-v8a-fenixNightly-aligned-debugSigned.apk Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y")$var.apk
+if [ -d "$FenixHome/$TodaysDate" ]; then mkdir -p $fenixHomeCountUp ; fi
