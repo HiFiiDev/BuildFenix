@@ -17,12 +17,10 @@ GREEN=$'\e[0;32m'
 On_Blu='\e[44m';
 # bold white
 BWhi='\e[1;37m';
-var=" Number "
-var+=$((var + 2))
-varAlt=$((var + 2))
+var=$((var + 2))
 doubleUnderscore="__"
-fenixHomeCountUp=/var/www/html/Fenix/Builds/$TodaysDate$var
-fenixHomeCountUpUnderscore=/var/www/html/Fenix/Builds/$TodaysDate$doubleUnderscore$varAlt
+fenixHomeCountUp=/var/www/html/Fenix/Builds/$TodaysDate$doubleUnderscore$var
+fenixChangelogCountup=/var/www/html/Fenix/Changelogs/$TodaysDate$doubleUnderscore$var
 
 # Alias for echo to handle escape codes like colors
 function echo() {
@@ -71,12 +69,16 @@ buildFenix() {
 
     echo " "
     echo " "
-    echo  "Building. \nThis will take a few moments."
-    sleep 0.5
+    echo  "Building... "
+    sleep 0.3
+    echo "This will take a few moments."
+    sleep 0.3
 
     # run this but thread it so it gets done faster
     #    for d in /$Fenix ; do (cd "$d" && find -name '*.sh' -print0 | xargs -P8 -L1 -0 sh build.sh); done
+    echo " "
     ./build.sh
+    mv ~/fenix/app/build/outputs/apk/geckoNightly/fenixNightly/app-geckoNightly-arm64-v8a-fenixNightly-unsigned.apk ~/fenix/app/build/outputs/apk/geckoNightly/fenixNightly/Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y")__$var.apk
     echo " "
     echo " "
     echo "Should be done now."
@@ -88,37 +90,59 @@ signFenix() {
     echo "Signing apk... "
     #   echo -e "\e[1;97m **TEXT OR COMMAND HERE**
     #    java -jar ~/signer.jar -a ~/fenix/app/build/outputs/apk/geckoNightly/fenixNightly/app-geckoNightly-arm64-v8a-fenixNightly-unsigned.apk --out $FenixHomeCountUp
-    java -jar ~/signer.jar -a ~/fenix/app/build/outputs/apk/geckoNightly/fenixNightly/app-geckoNightly-arm64-v8a-fenixNightly-unsigned.apk --out $fenixHomeCountUpUnderscore
+    java -jar ~/signer.jar -a ~/fenix/app/build/outputs/apk/geckoNightly/fenixNightly/Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y")__$var.apk --out $fenixHomeCountUp
+
+    # Sorry for hardcoding!
+    # 10-18-2019
+    cd  $fenixHomeCountUp && mv *.apk Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y")__$var.apk
 }
 
 doCd() {
     if [ ! -d $FenixHome ]; then mkdir -p $FenixHome; fi
-    if [ -d "$FenixHome/$TodaysDate" ]; then cd $FenixHome && mkdir -p $TodaysDate+$var && echo "made dir!"; fi
-
-    #if [ -d "$FenixHome/$TodaysDate" ]; then
-    # cd $FenixHome && mkdir -p $TodaysDate__2
-    #fi
+    if [ -d "$FenixHome/$TodaysDate" ]; then mkdir -p $fenixHomeCountUp && echo "made dir!"; fi
 }
 makeChangelog() {
-    cd $FenixChanges
-    if [ ! -d $FenixChanges/$TodaysDate ]; then mkdir -p $FenixChanges/$TodaysDate; fi
+    #TO DO 10-18-2019:
+    # clean up code
 
+    clear
+    echo "Making a changelog..."
+    echo " "
+    sleep 1
+    cd $FenixChanges
+    if [ ! -d $FenixChanges/$TodaysDate ] ; then
+        mkdir -p $FenixChanges/$TodaysDate
+    fi
+
+    if [ -d $FenixChanges/$TodaysDate ] ; then
+        mkdir -p $fenixChangelogCountup && cd $fenixChangelogCountup
+        cd $Fenix
+        git log --reverse --no-merges --since=1.day.ago >> Fenix_changelog_$TodaysDate$doubleUnderscore$var.txt
+    fi
     cd $Fenix
     git log --reverse --no-merges --since=1.day.ago >> Fenix_changelog_$TodaysDate.txt
-    mv Fenix_changelog_$TodaysDate.txt $FenixChanges/$TodaysDate/
+    cp Fenix_changelog_$TodaysDate$doubleUnderscore$var.txt $fenixChangelogCountup
 }
 
 clear
 echo " "
-echo "Welcome, $USER! \n"
+echo "Welcome, $USER!"
+echo " "
 sleep 1
+echo "Run ./fenix.sh --opti to optipng everything before building!"
+echo " "
+sleep 0.75
+
 # was just testing this
 # echo $fenixHomeCountUp
+
 buildFenix
 doCd
 signFenix
 if [ -d "$FenixHome/$TodaysDate" ]; then mkdir -p $fenixHomeCountUp ; fi
 makeChangelog
 cd $FenixHome
+
+# more tests
 # mv app-geckoNightly-arm64-v8a-fenixNightly-aligned-debugSigned.apk Fenix-Arm64-hifii__nightly-$(date +"%m-%d-%Y")$var.apk
 #if [ -d "$FenixHome/$TodaysDate" ]; then mkdir -p $fenixHomeCountUp ; fi
